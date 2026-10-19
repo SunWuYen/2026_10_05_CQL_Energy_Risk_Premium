@@ -1,0 +1,23 @@
+# OS / editor
+.DS_Store
+.vscode/
+
+# Python / Jupyter
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.venv/
+venv/
+
+# Licensed or third-party data (Bloomberg, ICE, papers) - keep local
+data/raw/
+reference/
+
+# Regenerable pipeline outputs
+data/processed/
+outputs/
+
+# Large / binary working documents
+docs/
+archive/
+*.7z
