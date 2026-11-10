@@ -92,7 +92,7 @@ def value(df_data: pd.DataFrame) -> pd.DataFrame:
         )
         _finalize(df, df_data, ticker, pos, WINDOW)
         df[ticker] = np.log(
-            df[ticker].shift(VALUE_LAG) / df_data[f"{ticker}1 Comdty"]
+            df[ticker].shift(VALUE_LAG) / df_data[f"{ticker}2 Comdty"]
         ).ffill()
     _mask_mfe(df)
     return df
