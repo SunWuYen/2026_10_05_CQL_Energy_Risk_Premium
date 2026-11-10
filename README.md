@@ -72,10 +72,13 @@ python src/run_backtest.py --style both
 ```
 
 Reads `data/processed/processed_data.csv` and writes `Table2_PanelA.csv`,
-`Table2_PanelB.csv`, `Table3.xlsx`, `ret.csv`, `ret_by_product.csv` and
+`Table2_PanelB.csv`, `Table3.xlsx`, `Table4.xlsx`, `ret.csv`, `ret_by_product.csv` and
 figures to `outputs/csffm/` or `outputs/cs/`. Running without `--style` (or
 using `--style both`) runs both constructions; each writes to its own folder.
 Use `--style csffm` or `--style cs` to run only one construction.
 `Table3.xlsx` contains full-sample statistics and separate statistics for
-the sample through February 2019 and March 2019 onward.
+the sample through March 2019 and April 2019 onward, including a separate
+Long CUA Short NG portfolio. Its CSFFM weights are +0.5/-0.5; its CS weights
+are volatility-scaled and normalized to gross exposure 1. `Table4.xlsx`
+reports that portfolio's correlation with EWI for the same sample periods.
 Tickers, contract multipliers and the sample period are set in `src/config.py`.

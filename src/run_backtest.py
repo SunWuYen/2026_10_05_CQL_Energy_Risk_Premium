@@ -24,7 +24,7 @@ GROUP_MAP = {
     "Natural Gas": ["NG"],
     "Ethanol": ["CUA"],
     "Propane": ["BAP"],
-    "Coal": ["MFE", "BAP"],
+    "Coal": ["MFE"],
     "Petroleum Complex": ["CO", "CL", "QS", "HO", "XBW"]
 }
 
@@ -123,6 +123,24 @@ def equal_weight_style(
     return style
 
 
+def long_cua_short_ng_style(
+    style_cls: type[StyleBase], df_data: pd.DataFrame
+) -> StyleBase:
+    """Build the CUA/NG pair using the selected portfolio normalization."""
+    signal = pd.DataFrame(
+        np.nan,
+        index=df_data.index,
+        columns=config.LIST_TICKERS,
+    )
+    signal["CUA"] = 1.0
+    signal["NG"] = -1.0
+
+    style = style_cls("Long CUA Short NG", signal=signal)
+    style.normalize_signal(df_data=df_data)
+    style.compute_weight()
+    return style
+
+
 def main(style_cls: type[StyleBase] = StyleCSFFM) -> dict:
     style_names = {
         StyleCSFFM: "csffm",
@@ -180,15 +198,29 @@ def main(style_cls: type[StyleBase] = StyleCSFFM) -> dict:
         style.compute_weight()
     list_style.append(equal_weight_style(list_style, df_data))
 
-    # Returns and Table 3
+    # Keep the pair outside list_style so it is not included in EWI.
     df_ret, df_ret_by_product = compute_return(list_style, df_data)
-    march_2019 = pd.Timestamp("2019-03-31")
+    pair_style = long_cua_short_ng_style(style_cls, df_data)
+    pair_ret, _ = compute_return([pair_style], df_data)
+    pair_name = pair_style.name
+    pair_returns = pair_ret[pair_name]
+
+    # Returns and Table 3
+    df_table3_returns = df_ret.loc[
+        period_start_plus_one:config.PERIOD_END
+    ].copy()
+    df_table3_returns[pair_name] = pair_returns.reindex(
+        df_table3_returns.index
+    )
+    march_2019_end = pd.Timestamp("2019-03-31")
     table3_periods = {
-        "Full Sample": df_ret.loc[period_start_plus_one:config.PERIOD_END],
-        "Start-Mar 2019": df_ret.loc[
-            period_start_plus_one:march_2019
+        "Full Sample": df_table3_returns,
+        "Through Mar 2019": df_table3_returns.loc[
+            period_start_plus_one:march_2019_end
         ],
-        "Mar 2019-End": df_ret.loc[march_2019+pd.Timedelta(days=1):config.PERIOD_END],
+        "Apr 2019-End": df_table3_returns.loc[
+            march_2019_end + pd.Timedelta(days=1):config.PERIOD_END
+        ],
     }
     table3_stats = {
         name: summary_statistics(period_returns)
@@ -197,6 +229,28 @@ def main(style_cls: type[StyleBase] = StyleCSFFM) -> dict:
     with pd.ExcelWriter(output_dir / "Table3.xlsx") as writer:
         for sheet_name, statistics in table3_stats.items():
             statistics.to_excel(writer, sheet_name=sheet_name)
+
+    table4_periods = {
+        "Full Sample": (period_start_plus_one, config.PERIOD_END),
+        "Through Mar 2019": (period_start_plus_one, march_2019_end),
+        "Apr 2019-End": (
+            march_2019_end + pd.Timedelta(days=1),
+            config.PERIOD_END,
+        ),
+    }
+    table4_corr = pd.DataFrame(
+        {
+            pair_name: {
+                period_name: df_ret.loc[start:end, "EWI"].corr(
+                    pair_returns.loc[start:end]
+                )
+                for period_name, (start, end) in table4_periods.items()
+            }
+        }
+    )
+    table4_corr.index.name = "Period"
+    table4_corr.to_excel(output_dir / "Table4.xlsx")
+
     df_ret.to_csv(output_dir / "ret.csv")
     df_ret_by_product.to_csv(output_dir / "ret_by_product.csv")
 
