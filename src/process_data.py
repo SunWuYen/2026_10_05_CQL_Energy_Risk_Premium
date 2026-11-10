@@ -34,7 +34,7 @@ CFTC_COT_RENAME = {
     "comm_positions_short_all": "comm_short",
     "noncomm_positions_long_all": "noncomm_long",
     "noncomm_positions_short_all": "noncomm_short",
-    "noncomm_postions_spread_all": "noncomm_spread",  # sic, CFTC typo
+    "noncomm_postions_spread_all": "noncomm_spread",  # CFTC typo
     "nonrept_positions_long_all": "nonrept_long",
     "nonrept_positions_short_all": "nonrept_short",
 }
@@ -43,8 +43,8 @@ CFTC_DCOT_RENAME = {
     "prod_merc_positions_short": "prod_merc_short",
     "swap_positions_long_all": "swap_long",
     "swap_positions_short_all": "swap_short",
-    "swap__positions_short_all": "swap_short",
     "swap_positions_spread_all": "swap_spread",
+    "swap__positions_short_all": "swap_short",   # Some historical files use double underscores
     "swap__positions_spread_all": "swap_spread", # Some historical files use double underscores
     "m_money_positions_long_all": "m_money_long",
     "m_money_positions_short_all": "m_money_short",
@@ -59,9 +59,9 @@ ICE_RENAME = {
     "Prod_Merc_Positions_Short_All": "prod_merc_short",
     "Swap_Positions_Long_All": "swap_long",
     "Swap_Positions_Short_All": "swap_short",
-    "Swap_Positions_Spread_All": "swap_spread", # Some historical files use double underscores
-    "Swap__Positions_Short_All": "swap_short",
-    "Swap__Positions_Spread_All": "swap_spread",
+    "Swap_Positions_Spread_All": "swap_spread", 
+    "Swap__Positions_Short_All": "swap_short",    # Some historical files use double underscores
+    "Swap__Positions_Spread_All": "swap_spread",  # Some historical files use double underscores
     "M_Money_Positions_Long_All": "m_money_long",
     "M_Money_Positions_Short_All": "m_money_short",
     "M_Money_Positions_Spread_All": "m_money_spread",
