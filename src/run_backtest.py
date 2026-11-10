@@ -3,7 +3,8 @@
 Reads data/processed/processed_data.csv (output of process_data.py) and writes
 tables, returns and figures to outputs/<style>/.
 
-Usage: python src/run_backtest.py --style csffm
+Usage: python src/run_backtest.py
+       python src/run_backtest.py --style csffm
        python src/run_backtest.py --style cs
        python src/run_backtest.py --style both
 """
@@ -21,8 +22,10 @@ from signals import build_style_signals
 
 GROUP_MAP = {
     "Natural Gas": ["NG"],
-    "Combined Petroleum": ["CO", "CL", "QS", "HO", "XBW"],
-    "Ethanol, Propane, and Coal": ["CUA", "BAP", "MFE"],
+    "Ethanol": ["CUA"],
+    "Propane": ["BAP"],
+    "Coal": ["MFE", "BAP"],
+    "Petroleum Complex": ["CO", "CL", "QS", "HO", "XBW"]
 }
 
 
@@ -63,7 +66,6 @@ def add_rolling_returns(
         compute_rolling_ret(
             ticker, df_data, df_expiration, idx_start, idx_end, False
         )
-
     return df_data.drop(index=next_business_date, errors="ignore")
 
 
@@ -180,32 +182,42 @@ def main(style_cls: type[StyleBase] = StyleCSFFM) -> dict:
 
     # Returns and Table 3
     df_ret, df_ret_by_product = compute_return(list_style, df_data)
-    table3 = summary_statistics(
-        df_ret.loc[period_start_plus_one:config.PERIOD_END]
-    )
-    table3.to_excel(output_dir / "Table3_1.xlsx")
+    march_2019 = pd.Timestamp("2019-03-31")
+    table3_periods = {
+        "Full Sample": df_ret.loc[period_start_plus_one:config.PERIOD_END],
+        "Start-Mar 2019": df_ret.loc[
+            period_start_plus_one:march_2019
+        ],
+        "Mar 2019-End": df_ret.loc[march_2019+pd.Timedelta(days=1):config.PERIOD_END],
+    }
+    table3_stats = {
+        name: summary_statistics(period_returns)
+        for name, period_returns in table3_periods.items()
+    }
+    with pd.ExcelWriter(output_dir / "Table3.xlsx") as writer:
+        for sheet_name, statistics in table3_stats.items():
+            statistics.to_excel(writer, sheet_name=sheet_name)
     df_ret.to_csv(output_dir / "ret.csv")
     df_ret_by_product.to_csv(output_dir / "ret_by_product.csv")
 
     # Figures
-    style_label = style_name.upper()
     plots.plot_cumulative_returns(
         df_ret,
         benchmark="EWI",
-        title=f"Cumulative Log Returns Over Time - {style_label}",
+        title=f"Cumulative Log Returns Over Time",
         save_path=figures_dir / f"cumulative_returns_{style_name}.png",
         show=False,
     )
     plots.plot_style_decomposition(
         df_ret_by_product,
-        title=f"Cumulative Product-level Contributions for EWI - {style_label}",
+        title=f"Cumulative Product-level Contributions for EWI",
         save_path=figures_dir / f"ewi_product_contributions_{style_name}.png",
         show=False,
     )
     plots.plot_grouped_contribution(
         df_ret_by_product,
         group_map=GROUP_MAP,
-        title=f"Cumulative Grouped Contributions for EWI - {style_label}",
+        title=f"Cumulative Grouped Contributions for EWI",
         save_path=figures_dir / f"ewi_grouped_contributions_{style_name}.png",
         show=False,
     )
@@ -217,7 +229,7 @@ def main(style_cls: type[StyleBase] = StyleCSFFM) -> dict:
         "list_style": list_style,
         "df_ret": df_ret,
         "df_ret_by_product": df_ret_by_product,
-        "table3": table3,
+        "table3": table3_stats["Full Sample"],
     }
 
 
@@ -226,8 +238,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--style",
         choices=("csffm", "cs", "both"),
-        default="csffm",
-        help="Portfolio construction style to run (default: csffm).",
+        default="both",
+        help="Portfolio construction style to run (default: both).",
     )
     args = parser.parse_args()
 

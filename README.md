@@ -65,13 +65,17 @@ python src/process_data.py
 Writes `processed_data.csv`, `cftc_cot.csv` and `cftc_dcot.csv` to `data/processed/`.
 
 ```bash
+python src/run_backtest.py
 python src/run_backtest.py --style csffm
 python src/run_backtest.py --style cs
 python src/run_backtest.py --style both
 ```
 
 Reads `data/processed/processed_data.csv` and writes `Table2_PanelA.csv`,
-`Table2_PanelB.csv`, `Table3_1.xlsx`, `ret.csv`, `ret_by_product.csv` and
-figures to `outputs/csffm/` or `outputs/cs/`. Use `--style both` to run both
-constructions; each writes to its own folder. The default style is `csffm`.
+`Table2_PanelB.csv`, `Table3.xlsx`, `ret.csv`, `ret_by_product.csv` and
+figures to `outputs/csffm/` or `outputs/cs/`. Running without `--style` (or
+using `--style both`) runs both constructions; each writes to its own folder.
+Use `--style csffm` or `--style cs` to run only one construction.
+`Table3.xlsx` contains full-sample statistics and separate statistics for
+the sample through February 2019 and March 2019 onward.
 Tickers, contract multipliers and the sample period are set in `src/config.py`.

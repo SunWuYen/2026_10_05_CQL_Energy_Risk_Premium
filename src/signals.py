@@ -36,29 +36,37 @@ def _empty_signal(df_data: pd.DataFrame) -> pd.DataFrame:
 def term_structure(df_data: pd.DataFrame) -> pd.DataFrame:
     df = _empty_signal(df_data)
     for ticker in config.LIST_TICKERS:
+        pos = _first_valid_position(df_data, [f"{ticker}1 Comdty",f"{ticker}2 Comdty"])
         df[ticker] = np.log(
             df_data[ticker + "1 Comdty"] / df_data[ticker + "2 Comdty"]
-        ).ffill()
+        ).rolling(window=WINDOW, min_periods=1).mean()
+        _finalize(df, df_data, ticker, pos, WINDOW)
     _mask_mfe(df)
     return df
 
 def hedging_pressure(df_data: pd.DataFrame) -> pd.DataFrame:
     df = _empty_signal(df_data)
     for ticker in config.LIST_TICKERS:
+        pos = _first_valid_position(df_data, [f"{ticker}_comm_short",f"{ticker}_comm_long"])
         df[ticker] = (
             (df_data[f"{ticker}_comm_short"] - df_data[f"{ticker}_comm_long"])
             / (df_data[f"{ticker}_comm_short"] + df_data[f"{ticker}_comm_long"])
-        ).shift(COT_LAG).ffill()
+        ).rolling(window=WINDOW, min_periods=1).mean()
+        df[ticker] = df[ticker].shift(COT_LAG)
+        _finalize(df, df_data, ticker, pos+COT_LAG, WINDOW)
     _mask_mfe(df)
     return df
 
 def speculative_pressure(df_data: pd.DataFrame) -> pd.DataFrame:
     df = _empty_signal(df_data)
     for ticker in config.LIST_TICKERS:
+        pos = _first_valid_position(df_data, [f"{ticker}_m_money_long",f"{ticker}_m_money_short"])
         df[ticker] = (
             (df_data[f"{ticker}_m_money_long"] - df_data[f"{ticker}_m_money_short"])
             / (df_data[f"{ticker}_m_money_long"] + df_data[f"{ticker}_m_money_short"])
-        ).shift(COT_LAG).ffill()
+        ).rolling(window=WINDOW, min_periods=1).mean()
+        df[ticker] = df[ticker].shift(COT_LAG)
+        _finalize(df, df_data, ticker, pos+COT_LAG, WINDOW)
     _mask_mfe(df)
     return df
 
@@ -77,9 +85,9 @@ def momentum(df_data: pd.DataFrame) -> pd.DataFrame:
 def value(df_data: pd.DataFrame) -> pd.DataFrame:
     df = _empty_signal(df_data)
     for ticker in config.LIST_TICKERS:
-        pos = _first_valid_position(df_data, [f"{ticker}1 Comdty"])
+        pos = _first_valid_position(df_data, [f"{ticker}2 Comdty"])
         df[ticker] = (
-            df_data[f"{ticker}1 Comdty"]
+            df_data[f"{ticker}2 Comdty"]
             .rolling(window=WINDOW, min_periods=1).mean()
         )
         _finalize(df, df_data, ticker, pos, WINDOW)
@@ -112,7 +120,7 @@ def liquidity(df_data: pd.DataFrame) -> pd.DataFrame:
         # the signal is -Amivest (long the least liquid).
         roll = lambda s: s.rolling(window=LIQUIDITY_WINDOW, min_periods=1).sum()
         amivest = roll(dollar_volume) / roll(abs_ret)
-        df[product] = -amivest * 10**-9
+        df[product] = -amivest * 10**-12
         _finalize(df, df_data, product, pos, LIQUIDITY_WINDOW)
     _mask_mfe(df)
     return df
