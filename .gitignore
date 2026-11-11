@@ -17,7 +17,7 @@ reference/
 data/processed/
 outputs/
 
-# Large / binary working documents
+# Local working documents and archived code
 docs/
 archive/
 *.7z

@@ -16,7 +16,7 @@ read as indicating that it is implemented.
 | Module | Script | Status | Output |
 |---|---|---|---|
 | 1. Process data | `src/process_data.py` | done | `data/processed/` |
-| 2. Cross-sectional backtest (signals, portfolios, returns, tables) | `src/run_backtest.py` (uses `returns.py`, `signals.py`, `portfolio.py`, `performance.py`) | in progress | `outputs/<style>/` |
+| 2. Cross-sectional backtest (signals, portfolios, returns, tables) | `src/run_backtest.py` (uses `returns.py`, `signals.py`, `portfolio.py`, `performance.py`) | done | `outputs/<style>/` |
 | 3. Plots | `src/plots.py` (called from `run_backtest.py`) | basic | `outputs/<style>/figures/` |
 
 `src/config.py` holds all paths (relative to the project root), so scripts can be run from anywhere.
@@ -25,16 +25,17 @@ read as indicating that it is implemented.
 
 ```
 src/          code
-data/raw/     inputs (not tracked): Bloomberg price/expiration workbook, ICE COTHistYYYY.csv
-data/processed/  output of module 1 (not tracked)
-outputs/      tables and figures (not tracked)
-reference/    papers and reference code (not tracked)
-docs/         working documents (not tracked)
-archive/      old code (not tracked)
+data/raw/     Bloomberg price/expiration workbook, ICE COTHistYYYY.csv
+data/processed/  output of module 1
+outputs/      tables and figures
+reference/    papers and reference code
+docs/         working documents
+archive/      old code
 ```
 
-Data, references and outputs are not in the repository because they are licensed
-(Bloomberg, ICE), copyrighted (papers) or regenerable.
+Data, references, outputs, working documents and archived code are kept locally
+and ignored by Git. Some are licensed (Bloomberg, ICE), copyrighted (papers)
+or regenerable.
 
 ## Setup
 
