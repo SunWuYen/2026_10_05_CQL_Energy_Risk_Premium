@@ -76,7 +76,8 @@ Reads `data/processed/processed_data.csv` and writes `Table2_PanelA.csv`,
 `Table2_PanelB.csv`, `Table3.xlsx`, `Table4.xlsx`, `ret.csv`,
 `ret_by_product.csv`, `weight_by_product.csv`, `signal_by_product.csv`,
 `normalized_signal_by_product.csv` and figures to `outputs/csffm/` or
-`outputs/cs/`. Running without `--style` (or
+`outputs/cs/`. Figures are saved as PNG files at 300 DPI.
+Running without `--style` (or
 using `--style both`) runs both constructions; each writes to its own folder.
 Use `--style csffm` or `--style cs` to run only one construction.
 For CS, a warning reports dates where tied signals cause the long and short

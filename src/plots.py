@@ -12,7 +12,7 @@ def _finish(fig, save_path: Path | None, show: bool) -> None:
     if save_path is not None:
         save_path = Path(save_path)
         save_path.parent.mkdir(parents=True, exist_ok=True)
-        fig.savefig(save_path, dpi=200, bbox_inches="tight")
+        fig.savefig(save_path, dpi=300, bbox_inches="tight")
     if show:
         plt.show()
 
