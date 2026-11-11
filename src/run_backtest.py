@@ -141,6 +141,21 @@ def long_cua_short_ng_style(
     return style
 
 
+def signals_by_product(
+    list_style: list[StyleBase], df_data: pd.DataFrame, normalized: bool = False
+) -> pd.DataFrame:
+    """Return one style/date indexed table of raw or normalized signals."""
+    signals = {}
+    for style in list_style:
+        signal = style.normalized_signal if normalized else style.signal
+        if signal is None:
+            signal = pd.DataFrame(
+                np.nan, index=df_data.index, columns=config.LIST_TICKERS
+            )
+        signals[style.name] = signal
+    return pd.concat(signals, names=["Style", "Date"])
+
+
 def main(style_cls: type[StyleBase] = StyleCSFFM) -> dict:
     style_names = {
         StyleCSFFM: "csffm",
@@ -199,9 +214,15 @@ def main(style_cls: type[StyleBase] = StyleCSFFM) -> dict:
     list_style.append(equal_weight_style(list_style, df_data))
 
     # Keep the pair outside list_style so it is not included in EWI.
-    df_ret, df_ret_by_product = compute_return(list_style, df_data)
+    df_ret, df_ret_by_product, df_weight_by_product = compute_return(
+        list_style, df_data
+    )
+    df_signal_by_product = signals_by_product(list_style, df_data)
+    df_normalized_signal_by_product = signals_by_product(
+        list_style, df_data, normalized=True
+    )
     pair_style = long_cua_short_ng_style(style_cls, df_data)
-    pair_ret, _ = compute_return([pair_style], df_data)
+    pair_ret, _, _ = compute_return([pair_style], df_data)
     pair_name = pair_style.name
     pair_returns = pair_ret[pair_name]
 
@@ -253,6 +274,11 @@ def main(style_cls: type[StyleBase] = StyleCSFFM) -> dict:
 
     df_ret.to_csv(output_dir / "ret.csv")
     df_ret_by_product.to_csv(output_dir / "ret_by_product.csv")
+    df_weight_by_product.to_csv(output_dir / "weight_by_product.csv")
+    df_signal_by_product.to_csv(output_dir / "signal_by_product.csv")
+    df_normalized_signal_by_product.to_csv(
+        output_dir / "normalized_signal_by_product.csv"
+    )
 
     # Figures
     plots.plot_cumulative_returns(
@@ -283,7 +309,9 @@ def main(style_cls: type[StyleBase] = StyleCSFFM) -> dict:
         "list_style": list_style,
         "df_ret": df_ret,
         "df_ret_by_product": df_ret_by_product,
-        "table3": table3_stats["Full Sample"],
+        "df_weight_by_product": df_weight_by_product,
+        "df_signal_by_product": df_signal_by_product,
+        "df_normalized_signal_by_product": df_normalized_signal_by_product
     }
 
 

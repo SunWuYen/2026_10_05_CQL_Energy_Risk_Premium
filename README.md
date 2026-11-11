@@ -72,10 +72,20 @@ python src/run_backtest.py --style both
 ```
 
 Reads `data/processed/processed_data.csv` and writes `Table2_PanelA.csv`,
-`Table2_PanelB.csv`, `Table3.xlsx`, `Table4.xlsx`, `ret.csv`, `ret_by_product.csv` and
-figures to `outputs/csffm/` or `outputs/cs/`. Running without `--style` (or
+`Table2_PanelB.csv`, `Table3.xlsx`, `Table4.xlsx`, `ret.csv`,
+`ret_by_product.csv`, `weight_by_product.csv`, `signal_by_product.csv`,
+`normalized_signal_by_product.csv` and figures to `outputs/csffm/` or
+`outputs/cs/`. Running without `--style` (or
 using `--style both`) runs both constructions; each writes to its own folder.
 Use `--style csffm` or `--style cs` to run only one construction.
+For CS, a warning reports dates where tied signals cause the long and short
+selections to overlap; the existing short assignment takes precedence.
+The product-level files have style and date index columns followed by product
+columns. The signal files contain same-day raw and normalized signals,
+respectively; EWI has no raw signal, so its raw entries are missing. The weight
+file contains the prior month-end weights actually applied to each day's
+return, with zeros outside the backtest calculation period. Like the product
+return file, these files include EWI but not the separately reported CUA/NG pair.
 `Table3.xlsx` contains full-sample statistics and separate statistics for
 the sample through March 2019 and April 2019 onward, including a separate
 Long CUA Short NG portfolio. Its CSFFM weights are +0.5/-0.5; its CS weights

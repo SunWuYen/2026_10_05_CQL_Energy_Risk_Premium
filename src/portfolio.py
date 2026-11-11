@@ -39,6 +39,8 @@ class StyleCS(StyleBase):
             index=self.signal.index,
             columns=self.signal.columns,
         )
+        overlap_count = 0
+        overlap_examples = []
 
         for index, row in self.signal.iterrows():
             valid = row.dropna()
@@ -50,11 +52,25 @@ class StyleCS(StyleBase):
             n_side = n // 2
 
             temp = pd.Series(0.0, index=row.index)
+            long_index = valid.nlargest(n_side).index
+            short_index = valid.nsmallest(n_side).index
+            overlap = long_index.intersection(short_index, sort=False)
+            if not overlap.empty:
+                overlap_count += 1
+                if len(overlap_examples) < 5:
+                    overlap_examples.append(f"{index}: {overlap.tolist()}")
 
-            temp.loc[valid.nlargest(n_side).index] = 1.0
-            temp.loc[valid.nsmallest(n_side).index] = -1.0
+            temp.loc[long_index] = 1.0
+            temp.loc[short_index] = -1.0
 
             normalized.loc[index] = temp
+
+        if overlap_count:
+            print(
+                f"Warning: StyleCS {self.name!r}: long and short selections "
+                f"overlap on {overlap_count} date(s); short assignments "
+                f"overwrite long assignments. Examples: {overlap_examples}"
+            )
 
         df_vol = df_data.loc[
             self.signal.index,
@@ -121,6 +137,7 @@ def compute_return(
         index=multi_index,
         columns=config.LIST_TICKERS,
     )
+    df_weight_by_product = df_ret_by_product.copy()
 
     n = 0
 
@@ -137,6 +154,7 @@ def compute_return(
                 list_rebalance_date[n]
             ].values
 
+            df_weight_by_product.loc[(style.name, index)] = weight
             product_ret = weight * log_ret
 
             df_ret.loc[index, style.name] = np.nansum(
@@ -153,4 +171,4 @@ def compute_return(
         ):
             n += 1
 
-    return df_ret, df_ret_by_product
+    return df_ret, df_ret_by_product, df_weight_by_product
